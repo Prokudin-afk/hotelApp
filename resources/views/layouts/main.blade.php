@@ -11,6 +11,8 @@
 </head>
 <body>
     @yield('content')
+
+    @yield('modals')
 </body>
 </html>
 
