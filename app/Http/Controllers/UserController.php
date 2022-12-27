@@ -31,7 +31,7 @@ class UserController extends Controller
             //incorrect email
         }
 
-        Post::create([
+        User::create([
             'name' => $data['name'],
             'mail' => $data['mail'],
             'role_id' => 1,
@@ -41,6 +41,10 @@ class UserController extends Controller
         $result['code'] = 120;
         print_r(json_encode($result));
         return;
+    }
+
+    public function log_in(Request $request) {
+        
     }
 
     public function log_out() {
