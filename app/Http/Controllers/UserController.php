@@ -40,11 +40,41 @@ class UserController extends Controller
 
         $result['code'] = 120;
         print_r(json_encode($result));
-        return;
     }
 
     public function log_in(Request $request) {
-        
+        $data = $request->user;
+
+        if(!$data['mail'] || !$data['pass']) {
+            $result['code'] = 101;
+            print_r(json_encode($result));
+            return;
+            //required fields are not filled
+        }
+
+        $match = User::select('users.name', 'users.password', 'roles.name as role')
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->where('users.mail', $data['mail'])
+            ->first();
+
+        if(!$match) {
+            $result['code'] = 102;
+            print_r(json_encode($result));
+            return;
+            //no account with such email
+        }
+
+        if($match['password'] != $data['pass']) {
+            $result['code'] = 103;
+            print_r(json_encode($result));
+            return;
+            //incorrect password
+        }
+
+        session()->put('name', $match['name']);
+        session()->put('role', $match['role']);
+        $result['code'] = 120;
+        print_r(json_encode($result));
     }
 
     public function log_out() {

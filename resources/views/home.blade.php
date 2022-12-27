@@ -47,8 +47,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <p style="color: red" id="pModalLogErr"></p>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="log_in()">Save changes</button>
+                    <button type="button" class="btn btn-primary" onclick="log_in()">Log in</button>
                 </div>
             </div>
         </div>
@@ -82,7 +83,7 @@
                 <div class="modal-footer">
                     <p style="color: red" id="pModalRegErr"></p>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="register()">Save changes</button>
+                    <button type="button" class="btn btn-primary" onclick="register()">Register</button>
                 </div>
             </div>
         </div>
@@ -91,10 +92,11 @@
 
 @section('scripts')
     <script>
-        $(document).ready(function() {});
-
-        $.ajaxSetup({
-            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
+        $(document).ready(function() {
+            //setting token for ajax
+            $.ajaxSetup({
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
+            });
         });
 
         function register() {
@@ -123,10 +125,41 @@
                             $('#pModalRegErr').text('incorrect email');
                             break;
                         case 120: 
+                            $('#modalReg').modal('hide');
                             alert('Success! You can log in your account');
                             break;
                     }
-                    console.log(data);
+                }
+            });
+        }
+
+        function log_in() {
+            let exUser = {
+                mail: $('#inpModalLogMail').val(),
+                pass: $('#inpModalLogPass').val()
+            }
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url:'/log_in',
+                data: {
+                    user: exUser
+                },
+                success:function(data) {
+                    switch(data['code']) {
+                        case 101: 
+                            $('#pModalLogErr').text('required fields are not filled');
+                            break;
+                        case 102: 
+                            $('#pModalLogErr').text('no account with such email');
+                            break;
+                        case 103: 
+                            $('#pModalLogErr').text('incorrect password');
+                            break;
+                        case 120: 
+                            window.location.reload();
+                            break;
+                    }
                 }
             });
         }
