@@ -31,6 +31,17 @@ class UserController extends Controller
             //incorrect email
         }
 
+        $duplicate = User::select('name')
+            ->where('mail', $data['mail'])
+            ->get();
+
+        if(count($duplicate)) {
+            $result['code'] = 104;
+            print_r(json_encode($result));
+            return;
+            //account with same email already exists
+        }
+
         User::create([
             'name' => $data['name'],
             'mail' => $data['mail'],

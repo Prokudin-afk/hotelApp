@@ -10,7 +10,7 @@
                 <div class="col-2"></div>
                 @if(session('role') == 'visitor')
                     <div class="col-md-3" style="cursor: pointer;">
-                        <p class="mt-4">Booking</p>
+                        <p class="mt-4">My orders</p>
                     </div>
                     <div class="col-md-3" style="cursor: pointer;" onclick="log_out()">
                         <p class="mt-4">Log out</p>
@@ -26,6 +26,38 @@
             </div>
         </div>
     </header>
+    <section class="container-fluid bg-secondary">
+        <div class="container">
+            <div class="row" style="text-align:center">
+                <div class="col-4">
+                    <div class="mt-4">
+                        <label class="form-label text-white">Check-in:</label>
+                        <input type="date" class="form-control" id="inpBookingStart">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mt-4">
+                        <label class="form-label text-white">Check-out:</label>
+                        <input type="date" class="form-control" id="inpBookingEnd">
+                    </div>
+                    <div class="mt-3 mb-4">
+                        <button type="button" class="btn btn-primary" id="btnSearchBooking">Find available rooms</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mt-4">
+                        <label class="form-label text-white">Count of visitors:</label>
+                        <select class="form-select" id="slcBookingVisitors">
+                            <option value="1">One</option>
+                            <option value="2">Two</option>
+                            <option value="3">Three</option>
+                            <option value="4">Four</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 @endsection
 
 @section('modals')
@@ -123,6 +155,9 @@
                             break;
                         case 103: 
                             $('#pModalRegErr').text('incorrect email');
+                            break;
+                        case 104: 
+                            $('#pModalRegErr').text('account with same email already exists');
                             break;
                         case 120: 
                             $('#modalReg').modal('hide');
