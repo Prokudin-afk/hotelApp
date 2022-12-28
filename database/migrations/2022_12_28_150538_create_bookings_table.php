@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('room_id');
             $table->date('date_start');
             $table->date('date_end');
-            $table->int('status');
+            $table->integer('status');
             $table->timestamps();
 
             $table->foreign('user_id')->on('users')->references('id');
