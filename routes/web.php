@@ -24,4 +24,5 @@ Route::post('/log_in', [UserController::class, 'log_in']);
 Route::post('/log_out', [UserController::class, 'log_out']);
 
 Route::post('/search_rooms', [BookingController::class, 'search_rooms']);
+Route::post('/show_orders', [BookingController::class, 'show_orders']);
 

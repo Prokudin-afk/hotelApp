@@ -63,7 +63,7 @@ class UserController extends Controller
             //required fields are not filled
         }
 
-        $match = User::select('users.name', 'users.password', 'roles.name as role')
+        $match = User::select('users.id', 'users.name', 'users.password', 'roles.name as role')
             ->join('roles', 'roles.id', '=', 'users.role_id')
             ->where('users.mail', $data['mail'])
             ->first();
@@ -82,6 +82,7 @@ class UserController extends Controller
             //incorrect password
         }
 
+        session()->put('user_id', $match['id']);
         session()->put('name', $match['name']);
         session()->put('role', $match['role']);
         $result['code'] = 120;

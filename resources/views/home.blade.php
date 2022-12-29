@@ -9,7 +9,7 @@
                 </div>
                 <div class="col-2"></div>
                 @if(session('role') == 'visitor')
-                    <div class="col-md-3" style="cursor: pointer;">
+                    <div class="col-md-3" style="cursor: pointer;" onclick="show_orders()">
                         <p class="mt-4">My orders</p>
                     </div>
                     <div class="col-md-3" style="cursor: pointer;" onclick="log_out()">
@@ -41,7 +41,7 @@
                         <input type="date" class="form-control" id="inpBookingEnd">
                     </div>
                     <div class="mt-3 mb-4">
-                        <button type="button" class="btn btn-primary" id="btnSearchBooking">Find available rooms</button>
+                        <button type="button" class="btn btn-primary" onclick="search_rooms()">Find available rooms</button>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -61,6 +61,7 @@
 @endsection
 
 @section('modals')
+    <!--Log in modal-->
     <div class="modal fade" id="modalLog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -87,6 +88,7 @@
         </div>
     </div>
 
+    <!--Register modal-->
     <div class="modal fade" id="modalReg" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -120,6 +122,67 @@
             </div>
         </div>
     </div>
+
+    <!--Orders modal-->
+    <div class="modal fade" id="modalShowOrders" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">My orders</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Created:</label>
+                    <table class="table table-primary" style="vertical-align: middle;">
+                        <thead>
+                            <th>№</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Room</th>
+                            <th>Cost</th>
+                            <th>Persons</th>
+                            <th>Type</th>
+                            <th></th>
+                        </thead>
+                        <tbody id="tblShowCreatedOrders"></tbody>
+                    </table>
+
+                    <label class="form-label">Active:</label>
+                    <table class="table table-success" style="vertical-align: middle;">
+                        <thead>
+                            <th>№</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Room</th>
+                            <th>Cost</th>
+                            <th>Persons</th>
+                            <th>Type</th>
+                            <th></th>
+                        </thead>
+                        <tbody id="tblShowActiveOrders"></tbody>
+                    </table>
+
+                    <label class="form-label">Archive:</label>
+                    <table class="table table-secondary" style="vertical-align: middle;">
+                        <thead>
+                            <th>№</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Room</th>
+                            <th>Cost</th>
+                            <th>Persons</th>
+                            <th>Type</th>
+                            <th></th>
+                        </thead>
+                        <tbody id="tblShowArchiveOrders"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -129,10 +192,6 @@
             $.ajaxSetup({
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
             });
-
-            $(document).on('click', '#btnSearchBooking', function() {
-                search_rooms();
-            })
         });
 
         function register() {
@@ -232,6 +291,59 @@
                     console.log(data);
                 }
             });
+        }
+
+        function show_orders() {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url:'/show_orders',
+                success:function(data) {
+                    $('#tblShowCreatedOrders').empty();
+                    $('#tblShowActiveOrders').empty();
+                    $('#tblShowArchiveOrders').empty();
+
+                    $.each(data['orders'], function(ind, elem) {
+                        let outStr = '<tr>';
+                            outStr += '<td>' + elem['id'] + '</td>';
+                            outStr += '<td>' + elem['date_start'] + '</td>';
+                            outStr += '<td>' + elem['date_end'] + '</td>';
+                            outStr += '<td>' + elem['real_num'] + '</td>';
+                            outStr += '<td>' + elem['cost_per_night'] + '</td>';
+                            outStr += '<td>' + elem['max_visitors_count'] + '</td>';
+                            outStr += '<td>' + elem['name'] + '</td>';
+                            outStr += '<td data-order="' + elem['id'] + '">' + visitorOrderActions + '</td>';
+                        outStr += '</tr>';
+
+                        switch(elem['status']) {
+                            case 1: 
+                                $('#tblShowCreatedOrders').append(outStr);
+                                break;
+                            case 2: 
+                                $('#tblShowActiveOrders').append(outStr);
+                                break;
+                            case 3: 
+                                $('#tblShowArchiveOrders').append(outStr);
+                                break;
+                        }
+                    });
+                    $('#modalShowOrders').modal('show');
+                }
+            });
+        }
+
+        let visitorOrderActions = '<div class="dropstart">\
+            <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
+                <i class="fa-solid fa-bars"></i>\
+            </button>\
+            <ul class="dropdown-menu">\
+                <li><a class="dropdown-item" onclick="loadEditOrder()">Edit</a></li>\
+                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
+            </ul>\
+        </div>';
+
+        function editOrder() {
+
         }
     </script>
 @endsection
