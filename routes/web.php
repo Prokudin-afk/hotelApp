@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BookingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,4 +22,6 @@ Route::get('/', function () {
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/log_in', [UserController::class, 'log_in']);
 Route::post('/log_out', [UserController::class, 'log_out']);
+
+Route::post('/search_rooms', [BookingController::class, 'search_rooms']);
 

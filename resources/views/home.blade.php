@@ -129,6 +129,10 @@
             $.ajaxSetup({
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
             });
+
+            $(document).on('click', '#btnSearchBooking', function() {
+                search_rooms();
+            })
         });
 
         function register() {
@@ -206,6 +210,26 @@
                 url:'/log_out',
                 success:function(data) {
                     window.location.reload();
+                }
+            });
+        }
+
+        function search_rooms() {
+            let searchData = {
+                start: $('#inpBookingStart').val(),
+                end: $('#inpBookingEnd').val(),
+                count: $('#slcBookingVisitors').val()
+            } 
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url:'/search_rooms',
+                data: {
+                    data: searchData
+                },
+                success:function(data) {
+                    console.log(data);
                 }
             });
         }
