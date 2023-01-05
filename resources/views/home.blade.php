@@ -401,12 +401,21 @@
                 $.ajax({
                     type: 'POST',
                     dataType: 'json',
-                    url:'/search_rooms',
+                    url:'/make_booking',
                     data: {
                         data: bookingData
                     },
                     success:function(data) {
-                        console.log(data);
+                        switch(data['code']) {
+                            case 101:
+                                alert('log in first');
+                                break;
+                            case 102: 
+                                alert('the room has already been booked by someone else');
+                            case 120: 
+                                //show bookings
+                                break;
+                        }
                     }
                 });
             }

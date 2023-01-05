@@ -65,6 +65,41 @@ class BookingController extends Controller
         return;
     }
 
+    public function make_booking(Request $request) {
+        $data = $request->data;
+        
+        if(session('role') != 'visitor') {
+            $result['code'] = 101;
+            print_r(json_encode($result));
+            return;
+        }
+
+        $check = Booking::select('bookings.id')
+            ->where('room_id', '=', $data['room_id'])
+            ->where('bookings.date_start', '>=', $data['start'])
+            ->where('bookings.date_start', '<=', $data['end'])
+            ->where('bookings.date_end', '>=', $data['start'])
+            ->where('bookings.date_end', '<=', $data['end'])
+            ->get();
+
+        if(count($check)) {
+            $result['code'] = 102;
+            print_r(json_encode($result));
+            return;
+        }
+
+        Booking::create([
+            'user_id' => session('user_id'),
+            'room_id' => $data['room_id'],
+            'date_start' => $data['start'],
+            'date_end' => $data['end'],
+            'status' => 1
+        ]);
+
+        $result['code'] = 120;
+        print_r(json_encode($result));
+    }
+
     public function show_orders() {
         if(session('role') != 'visitor') {
             $result['code'] = 101;
