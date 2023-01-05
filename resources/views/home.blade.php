@@ -123,6 +123,37 @@
         </div>
     </div>
 
+    <!--Avaliable rooms modal-->
+    <div class="modal fade" id="modalShowAvRooms" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">Avaliable rooms</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-2">
+                            <ul class="list-group" id="ulSwitchRoomType">
+                                <li class="list-group-item active">Standard</li>
+                                <li class="list-group-item">Average</li>
+                                <li class="list-group-item">Half luxury</li>
+                                <li class="list-group-item">Luxury</li>
+                            </ul>
+                        </div>
+                        <div class="col-10">
+                            <div id="dvShowRooms"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <p style="color: red" id="pModalRegErr"></p>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!--Orders modal-->
     <div class="modal fade" id="modalShowOrders" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -192,7 +223,28 @@
             $.ajaxSetup({
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
             });
+
+            $(document).on('click', '#ulSwitchRoomType li', function() {
+                $(this).addClass('active').siblings().removeClass('active');
+            });
         });
+
+        var exampleRoomImages = [
+            'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+            'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+            'https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1548&q=80',
+            'https://images.unsplash.com/photo-1631049035581-bec13f40dfff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80'
+        ];
+
+        var visitorOrderActions = '<div class="dropstart">\
+            <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
+                <i class="fa-solid fa-bars"></i>\
+            </button>\
+            <ul class="dropdown-menu">\
+                <li><a class="dropdown-item" onclick="loadEditOrder()">Edit</a></li>\
+                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
+            </ul>\
+        </div>';
 
         function register() {
             let newUser = {
@@ -288,9 +340,76 @@
                     data: searchData
                 },
                 success:function(data) {
+                    switch(data['code']) {
+                        case 101:
+                            alert('required fields are not filled');
+                            break;
+                        case 102:
+                            alert('incorrect date');
+                            break;
+                        case 103: 
+                            alert('incorrect count of visitors');
+                            break;
+                        case 120: 
+                            if(!data['rooms'].length) {
+                                alert('no results');
+                                return;
+                            }
+
+                            $('#dvShowRooms').empty();
+                            $('#ulSwitchRoomType').empty();
+                            $.each(data['types'], function(ind, elem) {
+                                let page = '<div id="page' + elem['name'] + 'Rooms" style="display: none;"></div>';
+                                $('#dvShowRooms').append(page);
+
+                                let btn = '<li class="list-group-item" onclick="$(\'#page' + elem['name'] + 'Rooms\').show().siblings().hide()">';
+                                btn += elem['name'] + '</li>';
+                                $('#ulSwitchRoomType').append(btn);
+                            });
+
+                            $.each(data['rooms'], function(ind, elem) {
+                                let temp = '';
+                                temp += '<div class="card" style="width: 18rem;">';
+                                    temp += '<img src="' + exampleRoomImages[randomNum(0, 3)] + '" class="card-img-top" alt="room">';
+                                    temp += '<div class="card-body">';
+                                        temp += '<h5 class="card-title">№ ' + elem['real_num'] + '</h5>';
+                                        temp += '<p class="card-text">Per night: ' + elem['cost_per_night'] + ' ₽</p>';
+                                        temp += '<p class="card-text">Visitors: ' + elem['max_visitors_count'] + '</p>';
+                                        temp += '<a class="btn btn-primary" style="width: 100%;" onclick="make_booking(' + elem['id'] + ', ' + elem['real_num'] + ')">Booking</a>';
+                                    temp += '</div>';
+                                temp += '</div>';
+
+                                $('#page' + elem['name'] + 'Rooms').append(temp);
+                            });
+                            $('#modalShowAvRooms').modal('show');
+                            break;
+                    }
                     console.log(data);
                 }
             });
+        }
+
+        function make_booking(roomId, roomNum) {
+            if(confirm('Really want to booking room № ' + roomNum + '?')) {
+                let bookingData = {
+                    room_id: roomId,
+                    start: $('#inpBookingStart').val(),
+                    end: $('#inpBookingEnd').val(),
+                    count: $('#slcBookingVisitors').val()
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url:'/search_rooms',
+                    data: {
+                        data: bookingData
+                    },
+                    success:function(data) {
+                        console.log(data);
+                    }
+                });
+            }
         }
 
         function show_orders() {
@@ -332,18 +451,12 @@
             });
         }
 
-        let visitorOrderActions = '<div class="dropstart">\
-            <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
-                <i class="fa-solid fa-bars"></i>\
-            </button>\
-            <ul class="dropdown-menu">\
-                <li><a class="dropdown-item" onclick="loadEditOrder()">Edit</a></li>\
-                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
-            </ul>\
-        </div>';
-
         function editOrder() {
 
+        }
+
+        function randomNum(min, max) { 
+            return Math.floor(Math.random() * (max - min + 1) + min)
         }
     </script>
 @endsection
