@@ -19,6 +19,10 @@ Route::get('/', function () {
     return view('home');
 });
 
+Route::get('/control_panel', function () {
+    return ((session('role') == 'operator')?view('control_panel'):false);
+});
+
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/log_in', [UserController::class, 'log_in']);
 Route::post('/log_out', [UserController::class, 'log_out']);

@@ -5,12 +5,19 @@
         <div class="container">
             <div class="row">
                 <div class="col-4">
-                    <p class="display-5">hotel</p>
+                    <a href="/" style="text-decoration: none;"><p class="display-5">hotel</p></a>
                 </div>
                 <div class="col-2"></div>
                 @if(session('role') == 'visitor')
                     <div class="col-md-3" style="cursor: pointer;" onclick="show_orders()">
                         <p class="mt-4">My orders</p>
+                    </div>
+                    <div class="col-md-3" style="cursor: pointer;" onclick="log_out()">
+                        <p class="mt-4">Log out</p>
+                    </div>
+                @elseif(session('role') == 'operator')
+                    <div class="col-md-3" style="cursor: pointer;">
+                        <a href="/control_panel" style="text-decoration: none; color: black;"><p class="mt-4">Control panel</p></a>
                     </div>
                     <div class="col-md-3" style="cursor: pointer;" onclick="log_out()">
                         <p class="mt-4">Log out</p>
@@ -224,6 +231,7 @@
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
             });
 
+            //selecting type of room for booking
             $(document).on('click', '#ulSwitchRoomType li', function() {
                 $(this).addClass('active').siblings().removeClass('active');
             });
@@ -237,6 +245,15 @@
         ];
 
         var visitorOrderActions = '<div class="dropstart">\
+            <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
+                <i class="fa-solid fa-bars"></i>\
+            </button>\
+            <ul class="dropdown-menu">\
+                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
+            </ul>\
+        </div>';
+
+        var operatorOrderActions = '<div class="dropstart">\
             <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
                 <i class="fa-solid fa-bars"></i>\
             </button>\
@@ -413,7 +430,8 @@
                             case 102: 
                                 alert('the room has already been booked by someone else');
                             case 120: 
-                                //show bookings
+                                alert('success');
+                                show_orders();
                                 break;
                         }
                     }
