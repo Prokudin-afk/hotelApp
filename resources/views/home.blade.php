@@ -237,28 +237,18 @@
             });
         });
 
-        var exampleRoomImages = [
+        let exampleRoomImages = [
             'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
             'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
             'https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1548&q=80',
             'https://images.unsplash.com/photo-1631049035581-bec13f40dfff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80'
         ];
 
-        var visitorOrderActions = '<div class="dropstart">\
+        let visitorOrderActions = '<div class="dropstart">\
             <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
                 <i class="fa-solid fa-bars"></i>\
             </button>\
             <ul class="dropdown-menu">\
-                <li><a class="dropdown-item" onclick="deleteOrder(this)">Delete</a></li>\
-            </ul>\
-        </div>';
-
-        var operatorOrderActions = '<div class="dropstart">\
-            <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
-                <i class="fa-solid fa-bars"></i>\
-            </button>\
-            <ul class="dropdown-menu">\
-                <li><a class="dropdown-item" onclick="loadEditOrder(this)">Edit</a></li>\
                 <li><a class="dropdown-item" onclick="deleteOrder(this)">Delete</a></li>\
             </ul>\
         </div>';

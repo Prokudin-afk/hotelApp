@@ -29,10 +29,65 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div id="dvOperShowCreated"></div>
-                        <div id="dvOperShowActive" style="display: none;"></div>
-                        <div id="dvOperShowArchive" style="display: none;"></div>
-                        <div id="dvOperShowVisitors" style="display: none;"></div>
+                        <div id="dvOperShowCreated">
+                            <table id="tblOperShowCreated" class="table">
+                                <thead>
+                                    <th>id</th>
+                                    <th>start</th>
+                                    <th>end</th>
+                                    <th>r_num</th>
+                                    <th>cost</th>
+                                    <th>visitors</th>
+                                    <th>type</th>
+                                    <th>u_id</th>
+                                    <th>name</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="dvOperShowActive" style="display: none;">
+                            <table id="tblOperShowActive" class="table">
+                                <thead>
+                                    <th>id</th>
+                                    <th>start</th>
+                                    <th>end</th>
+                                    <th>r_num</th>
+                                    <th>cost</th>
+                                    <th>visitors</th>
+                                    <th>type</th>
+                                    <th>u_id</th>
+                                    <th>name</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="dvOperShowArchive" style="display: none;">
+                            <table id="tblOperShowArchive" class="table">
+                                <thead>
+                                    <th>id</th>
+                                    <th>start</th>
+                                    <th>end</th>
+                                    <th>r_num</th>
+                                    <th>cost</th>
+                                    <th>visitors</th>
+                                    <th>type</th>
+                                    <th>u_id</th>
+                                    <th>name</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="dvOperShowVisitors" style="display: none;">
+                            <table id="tblOperShowVisitors" class="table">
+                                <thead>
+                                    <th>id</th>
+                                    <th>name</th>
+                                    <th>mail</th>
+                                    <th>role</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
     
                     <div class="row">
@@ -62,6 +117,7 @@
         $(document).on('click', '#ulSwitchOper li', function() {
             $(this).addClass('active').siblings().removeClass('active');
             loadTable();
+            $('#' + outScreens[$(this).data('table')]).show().siblings().hide();
         });
 
         /*PAGINATION*/
@@ -88,10 +144,39 @@
         /*PAGINATION*/
     });
 
+    let outScreens = {
+        1: 'dvOperShowCreated',
+        2: 'dvOperShowActive',
+        3: 'dvOperShowArchive',
+        4: 'dvOperShowVisitors'
+    }
+
+    let operatorOrderActions = '<div class="dropstart">\
+        <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
+            <i class="fa-solid fa-bars"></i>\
+        </button>\
+        <ul class="dropdown-menu">\
+            <li><a class="dropdown-item" onclick="loadEditOrder(this)">Edit</a></li>\
+            <li><a class="dropdown-item" onclick="deleteOrder(this)">Delete</a></li>\
+        </ul>\
+    </div>';
+
+    let operatorUserActions = '<div class="dropstart">\
+        <button type="button" class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">\
+            <i class="fa-solid fa-bars"></i>\
+        </button>\
+        <ul class="dropdown-menu">\
+            <li><a class="dropdown-item" onclick="loadEditOrder(this)">Show visitor bookings</a></li>\
+        </ul>\
+    </div>';
+
     function loadTable() {
+        let page = $('.active.page-link').data('page')??1;
+        let table = $('#ulSwitchOper .active').data('table');
+
         let loadData = {
-            page: $('.active.page-link').data('page')??1,
-            table: $('#ulSwitchOper .active').data('table'),
+            page: page,
+            table: table,
             search: $('#inpSearchOper').val()
         }
         $.ajax({
@@ -102,8 +187,35 @@
                 data: loadData
             },
             success:function(data) {
-                console.log(data);
                 loadPagination(data['count'], $('.active.page-link').data('page')??1);
+                if((table == 1)||(table == 2)||(table==3)) {
+                    let strTable = '';
+                    $.each(data['table'], function(ind, elem) {
+                        strTable += '<tr>';
+                        strTable += '<td>' + elem['b_id'] + '</td>';
+                        strTable += '<td>' + elem['date_start'] + '</td>';
+                        strTable += '<td>' + elem['date_end'] + '</td>';
+                        strTable += '<td>' + elem['real_num'] + '</td>';
+                        strTable += '<td>' + elem['cost_per_night'] + '</td>';
+                        strTable += '<td>' + elem['max_visitors_count'] + '</td>';
+                        strTable += '<td>' + elem['name'] + '</td>';
+                        strTable += '<td>' + elem['u_id'] + '</td>';
+                        strTable += '<td>' + elem['u_name'] + '</td>';
+                        strTable += '</tr>';
+                    });
+                    $('#' + outScreens[table] + ' tbody').empty().append(strTable);
+                }else if(table == 4) {
+                    let strTable = '';
+                    $.each(data['table'], function(ind, elem) {
+                        strTable += '<tr>';
+                        strTable += '<td>' + elem['id'] + '</td>';
+                        strTable += '<td>' + elem['name'] + '</td>';
+                        strTable += '<td>' + elem['mail'] + '</td>';
+                        strTable += '<td>' + elem['role'] + '</td>';
+                        strTable += '</tr>';
+                    });
+                    $('#' + outScreens[table] + ' tbody').empty().append(strTable);
+                }
             }
         });
     }
@@ -121,7 +233,10 @@
         if ((active == 1) && (count > 2)) {
             str += '<li class="page-item page-link" data-page="' + (active + 2) + '">' + (active + 2) + '</li>';
         }
-        str += '<li class="position-relative page-next page-link">Forward</li>';
+        str += '<li class="position-relative page-next page-link">Forward';
+        str += '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"';
+        str += 'data-count="' + count + '">' + Math.max(0, (count - active)) + '</span></li>';
+
         $('#ulPagination').empty().append(str);
         $('[data-page="' + active + '"]').addClass('active');
     }

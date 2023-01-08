@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Room;
+use App\Models\User;
 
 class BookingController extends Controller
 {
@@ -162,7 +163,7 @@ class BookingController extends Controller
         if(($data['table'] == '1') || ($data['table'] == '2') || ($data['table'] == '3')) {
             $result['table'] = Booking::select('bookings.id as b_id', 'bookings.date_start', 'bookings.date_end', 'bookings.status',
             'rooms.real_num', 'rooms.cost_per_night', 'rooms.max_visitors_count', 'room_types.name',
-            'users.id as u_id', 'users.name', 'users.mail')
+            'users.id as u_id', 'users.name as u_name', 'users.mail')
                 ->join('rooms', 'rooms.id', '=', 'bookings.room_id')
                 ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
                 ->join('users', 'users.id', '=', 'bookings.user_id')
@@ -172,8 +173,14 @@ class BookingController extends Controller
                 ->get();
 
             $result['count'] = ceil(Booking::where('status', '=', $data['table'])->count()/3);
-        }elseif($data['table'] == 'Visitors') {
+        }elseif($data['table'] == 4) {
+            $result['table'] = User::select('users.id', 'users.name', 'users.mail', 'roles.name as role')
+                ->join('roles', 'users.role_id', '=', 'roles.id')
+                ->limit(3)
+                ->offset($offset)
+                ->get();
 
+                $result['count'] = ceil(User::count()/3);
         }
         print_r(json_encode($result));
         return;
