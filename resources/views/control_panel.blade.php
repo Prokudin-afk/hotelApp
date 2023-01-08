@@ -25,7 +25,7 @@
                 <div class="col-10">
                     <div class="row">
                         <div class="col-12">
-                            <input type="text" id="inpSearchOper" class="form-control mt-2" placeholder="Search...">
+                            <input type="text" id="inpSearchOper" class="form-control mt-2" placeholder="Search by id...">
                         </div>
                     </div>
                     <div class="row">
@@ -41,6 +41,7 @@
                                     <th>type</th>
                                     <th>u_id</th>
                                     <th>name</th>
+                                    <th></th>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -57,6 +58,7 @@
                                     <th>type</th>
                                     <th>u_id</th>
                                     <th>name</th>
+                                    <th></th>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -73,6 +75,7 @@
                                     <th>type</th>
                                     <th>u_id</th>
                                     <th>name</th>
+                                    <th></th>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -84,6 +87,7 @@
                                     <th>name</th>
                                     <th>mail</th>
                                     <th>role</th>
+                                    <th></th>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -102,6 +106,85 @@
 @endsection
 
 @section('modals')
+<div class="modal fade" id="mdlEditBooking" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Edit booking №<a id="pMdlEditBooking"></a></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="slcEditBookingStatus">
+                    <option value="1">Created</option>
+                    <option value="2">Active</option>
+                    <option value="3">Archive</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveBookingChanges">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Orders modal-->
+<div class="modal fade" id="modalShowOrders" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">My orders</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Created:</label>
+                <table class="table table-primary" style="vertical-align: middle;">
+                    <thead>
+                        <th>№</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Room</th>
+                        <th>Cost</th>
+                        <th>Persons</th>
+                        <th>Type</th>
+                    </thead>
+                    <tbody id="tblShowCreatedOrders"></tbody>
+                </table>
+
+                <label class="form-label">Active:</label>
+                <table class="table table-success" style="vertical-align: middle;">
+                    <thead>
+                        <th>№</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Room</th>
+                        <th>Cost</th>
+                        <th>Persons</th>
+                        <th>Type</th>
+                    </thead>
+                    <tbody id="tblShowActiveOrders"></tbody>
+                </table>
+
+                <label class="form-label">Archive:</label>
+                <table class="table table-secondary" style="vertical-align: middle;">
+                    <thead>
+                        <th>№</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Room</th>
+                        <th>Cost</th>
+                        <th>Persons</th>
+                        <th>Type</th>
+                    </thead>
+                    <tbody id="tblShowArchiveOrders"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -142,6 +225,36 @@
             loadTable();
         });
         /*PAGINATION*/
+
+        $(document).on('click', '#btnSaveBookingChanges', function() {
+            let bookingData = {
+                id: $('#btnSaveBookingChanges').data('order'),
+                action: 'edit',
+                status: $('#slcEditBookingStatus').val()
+            }
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url:'/delete_booking',
+                data: {
+                    data: bookingData
+                },
+                success:function(data) {
+                    if(data['code'] = 120) {
+                        alert('edited successfully');
+                        $('#mdlEditBooking').modal('hide');
+                        loadTable();
+                    }else {
+                        alert('you can`t edit this booking')
+                        $('#mdlEditBooking').modal('hide');
+                    }
+                }
+            });
+        });
+
+        $(document).on('keyup', '#inpSearchOper', function() {
+            loadTable();
+        })
     });
 
     let outScreens = {
@@ -166,7 +279,7 @@
             <i class="fa-solid fa-bars"></i>\
         </button>\
         <ul class="dropdown-menu">\
-            <li><a class="dropdown-item" onclick="loadEditOrder(this)">Show visitor bookings</a></li>\
+            <li><a class="dropdown-item" onclick="show_orders(this)">Show visitor bookings</a></li>\
         </ul>\
     </div>';
 
@@ -191,7 +304,7 @@
                 if((table == 1)||(table == 2)||(table==3)) {
                     let strTable = '';
                     $.each(data['table'], function(ind, elem) {
-                        strTable += '<tr>';
+                        strTable += '<tr data-order="' + elem['b_id'] + '">';
                         strTable += '<td>' + elem['b_id'] + '</td>';
                         strTable += '<td>' + elem['date_start'] + '</td>';
                         strTable += '<td>' + elem['date_end'] + '</td>';
@@ -201,17 +314,19 @@
                         strTable += '<td>' + elem['name'] + '</td>';
                         strTable += '<td>' + elem['u_id'] + '</td>';
                         strTable += '<td>' + elem['u_name'] + '</td>';
+                        strTable += '<td>' + operatorOrderActions + '</td>';
                         strTable += '</tr>';
                     });
                     $('#' + outScreens[table] + ' tbody').empty().append(strTable);
                 }else if(table == 4) {
                     let strTable = '';
                     $.each(data['table'], function(ind, elem) {
-                        strTable += '<tr>';
+                        strTable += '<tr data-user="' + elem['id'] + '">';
                         strTable += '<td>' + elem['id'] + '</td>';
                         strTable += '<td>' + elem['name'] + '</td>';
                         strTable += '<td>' + elem['mail'] + '</td>';
                         strTable += '<td>' + elem['role'] + '</td>';
+                        strTable += '<td>' + operatorUserActions + '</td>';
                         strTable += '</tr>';
                     });
                     $('#' + outScreens[table] + ' tbody').empty().append(strTable);
@@ -241,5 +356,81 @@
         $('[data-page="' + active + '"]').addClass('active');
     }
 
+    function deleteOrder(order) {
+        let orderId = $(order).parent().parent().parent().parent().parent().data('order');
+        let bookingData = {
+            id: orderId,
+            action: 'delete'
+        }
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url:'/delete_booking',
+            data: {
+                data: bookingData
+            },
+            success:function(data) {
+                switch(data['code']) {
+                    case 120:
+                        alert('successfully deleted');
+                        loadTable();
+                }
+                loadTable();
+            } 
+        })
+    } 
+
+    function loadEditOrder(order) {
+        let orderId = $(order).parent().parent().parent().parent().parent().data('order');
+        $('#pMdlEditBooking').empty().append(orderId);
+        $('#btnSaveBookingChanges').data('order', orderId);
+        $('#mdlEditBooking').modal('show');
+    }
+
+    function show_orders(user) {
+        let userId = $(user).parent().parent().parent().parent().parent().data('user');
+        let data = {
+           id: userId
+        }
+
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url:'/show_orders',
+            data: {
+                data: data
+            },
+            success:function(data) {
+                $('#tblShowCreatedOrders').empty();
+                $('#tblShowActiveOrders').empty();
+                $('#tblShowArchiveOrders').empty();
+
+                $.each(data['orders'], function(ind, elem) {
+                    let outStr = '<tr>';
+                        outStr += '<td>' + elem['id'] + '</td>';
+                        outStr += '<td>' + elem['date_start'] + '</td>';
+                        outStr += '<td>' + elem['date_end'] + '</td>';
+                        outStr += '<td>' + elem['real_num'] + '</td>';
+                        outStr += '<td>' + elem['cost_per_night'] + '</td>';
+                        outStr += '<td>' + elem['max_visitors_count'] + '</td>';
+                        outStr += '<td>' + elem['name'] + '</td>';
+                    outStr += '</tr>';
+
+                    switch(elem['status']) {
+                        case 1: 
+                            $('#tblShowCreatedOrders').append(outStr);
+                            break;
+                        case 2: 
+                            $('#tblShowActiveOrders').append(outStr);
+                            break;
+                        case 3: 
+                            $('#tblShowArchiveOrders').append(outStr);
+                            break;
+                    }
+                });
+                $('#modalShowOrders').modal('show');
+            }
+        });
+    }
 </script>
 @endsection

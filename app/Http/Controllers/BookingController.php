@@ -117,6 +117,7 @@ class BookingController extends Controller
             if(($bookingToDelete['status'] != 1) || (session('user_id') != $bookingToDelete['user_id']) || ($data['action'] == 'edit')) {
                 $result['code'] = 102;
                 print_r(json_encode($result));
+                return;
             }
         }elseif((session('role') == 'operator') || (session('role') == 'admin')) {
             //
@@ -137,18 +138,27 @@ class BookingController extends Controller
         print_r(json_encode($result));
     }
 
-    public function show_orders() {
-        if(session('role') != 'visitor') {
+    public function show_orders(Request $request) {
+        if(session('role') == null) {
             $result['code'] = 101;
             print_r(json_encode($result));
             return;
+        }
+
+        $searchingId = '';
+
+        if(session('role') == 'visitor') {
+            $searchingId = session('user_id');
+        }elseif((session('role') == 'operator')||(session('role') == 'admin')) {
+            $data = $request->data;
+            $searchingId = $data['id'];
         }
 
         $result['orders'] = Booking::select('bookings.id', 'bookings.date_start', 'bookings.date_end', 'bookings.status', 
         'rooms.real_num', 'rooms.cost_per_night', 'rooms.max_visitors_count', 'room_types.name')
             ->join('rooms', 'rooms.id', '=', 'bookings.room_id')
             ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
-            ->where('bookings.user_id', '=', session('user_id'))
+            ->where('bookings.user_id', '=', $searchingId)
             ->get();
 
         print_r(json_encode($result));
@@ -168,19 +178,23 @@ class BookingController extends Controller
                 ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
                 ->join('users', 'users.id', '=', 'bookings.user_id')
                 ->where('bookings.status', '=', $data['table'])
+                ->where('bookings.id', 'like', ('%' . $data['search'] . '%'))
                 ->limit(3)
                 ->offset($offset)
                 ->get();
 
-            $result['count'] = ceil(Booking::where('status', '=', $data['table'])->count()/3);
+            $result['count'] = ceil(Booking::where('status', '=', $data['table'])
+                ->where('bookings.id', 'like', ('%' . $data['search'] . '%'))
+                ->count()/3);
         }elseif($data['table'] == 4) {
             $result['table'] = User::select('users.id', 'users.name', 'users.mail', 'roles.name as role')
                 ->join('roles', 'users.role_id', '=', 'roles.id')
+                ->where('users.id', 'like', ('%' . $data['search'] . '%'))
                 ->limit(3)
                 ->offset($offset)
                 ->get();
 
-                $result['count'] = ceil(User::count()/3);
+                $result['count'] = ceil(User::where('users.id', 'like', ('%' . $data['search'] . '%'))->count()/3);
         }
         print_r(json_encode($result));
         return;

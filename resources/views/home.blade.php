@@ -391,7 +391,6 @@
                             $('#modalShowAvRooms').modal('show');
                             break;
                     }
-                    console.log(data);
                 }
             });
         }
@@ -483,7 +482,14 @@
                     data: bookingData
                 },
                 success:function(data) {
-                    console.log(data);
+                    switch(data['code']) {
+                        case 102:
+                            alert('you can delee only created orders');
+                            break;
+                        case 120: 
+                            show_orders();
+                            break;
+                    }
                 } 
             })
         } 
