@@ -100,6 +100,42 @@ class BookingController extends Controller
         print_r(json_encode($result));
     }
 
+    public function delete_booking(Request $request) {
+        $data = $request->data;
+
+        $bookingToDelete = Booking::select('bookings.status', 'bookings.user_id')
+            ->where('id', '=', $data['id'])
+            ->first();
+
+        if(!$bookingToDelete) {
+            $result['code'] = 101;
+            print_r(json_encode($result));
+        }
+        
+        if(session('role') == 'visitor') {
+            if(($bookingToDelete['status'] != 1) || (session('user_id') != $bookingToDelete['user_id']) || ($data['action'] == 'edit')) {
+                $result['code'] = 102;
+                print_r(json_encode($result));
+            }
+        }elseif((session('role') == 'operator') || (session('role') == 'admin')) {
+            //
+        }else {
+            $result['code'] = 103;
+            print_r(json_encode($result));
+        }
+
+        if($data['action'] == 'delete') {
+            Booking::where('id', '=', $data['id'])->delete();
+        }elseif($data['action'] == 'edit') {
+            Booking::where('id', $data['id'])->update([
+                'status' => $data['status']
+            ]);
+        }
+
+        $result['code'] = 120;
+        print_r(json_encode($result));
+    }
+
     public function show_orders() {
         if(session('role') != 'visitor') {
             $result['code'] = 101;
@@ -114,6 +150,31 @@ class BookingController extends Controller
             ->where('bookings.user_id', '=', session('user_id'))
             ->get();
 
+        print_r(json_encode($result));
+        return;
+    }
+
+    public function load_table(Request $request) {
+        $data = $request->data;
+        
+        $offset = max(0, (($data['page'] - 1) * 3));
+
+        if(($data['table'] == '1') || ($data['table'] == '2') || ($data['table'] == '3')) {
+            $result['table'] = Booking::select('bookings.id as b_id', 'bookings.date_start', 'bookings.date_end', 'bookings.status',
+            'rooms.real_num', 'rooms.cost_per_night', 'rooms.max_visitors_count', 'room_types.name',
+            'users.id as u_id', 'users.name', 'users.mail')
+                ->join('rooms', 'rooms.id', '=', 'bookings.room_id')
+                ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+                ->join('users', 'users.id', '=', 'bookings.user_id')
+                ->where('bookings.status', '=', $data['table'])
+                ->limit(3)
+                ->offset($offset)
+                ->get();
+
+            $result['count'] = ceil(Booking::where('status', '=', $data['table'])->count()/3);
+        }elseif($data['table'] == 'Visitors') {
+
+        }
         print_r(json_encode($result));
         return;
     }

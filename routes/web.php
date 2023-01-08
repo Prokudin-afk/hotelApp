@@ -29,5 +29,7 @@ Route::post('/log_out', [UserController::class, 'log_out']);
 
 Route::post('/search_rooms', [BookingController::class, 'search_rooms']);
 Route::post('/make_booking', [BookingController::class, 'make_booking']);
+Route::post('/delete_booking', [BookingController::class, 'delete_booking']);
 Route::post('/show_orders', [BookingController::class, 'show_orders']);
+Route::post('/load_table', [BookingController::class, 'load_table']);
 

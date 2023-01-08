@@ -249,7 +249,7 @@
                 <i class="fa-solid fa-bars"></i>\
             </button>\
             <ul class="dropdown-menu">\
-                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
+                <li><a class="dropdown-item" onclick="deleteOrder(this)">Delete</a></li>\
             </ul>\
         </div>';
 
@@ -258,8 +258,8 @@
                 <i class="fa-solid fa-bars"></i>\
             </button>\
             <ul class="dropdown-menu">\
-                <li><a class="dropdown-item" onclick="loadEditOrder()">Edit</a></li>\
-                <li><a class="dropdown-item" onclick="deleteOrder()">Delete</a></li>\
+                <li><a class="dropdown-item" onclick="loadEditOrder(this)">Edit</a></li>\
+                <li><a class="dropdown-item" onclick="deleteOrder(this)">Delete</a></li>\
             </ul>\
         </div>';
 
@@ -431,6 +431,7 @@
                                 alert('the room has already been booked by someone else');
                             case 120: 
                                 alert('success');
+                                $('#modalShowAvRooms').modal('hide');
                                 show_orders();
                                 break;
                         }
@@ -477,6 +478,25 @@
                 }
             });
         }
+
+        function deleteOrder(order) {
+            let orderId = $(order).parent().parent().parent().parent().data('order');
+            let bookingData = {
+                id: orderId,
+                action: 'delete'
+            }
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url:'/delete_booking',
+                data: {
+                    data: bookingData
+                },
+                success:function(data) {
+                    console.log(data);
+                } 
+            })
+        } 
 
         function editOrder() {
 
